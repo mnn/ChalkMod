@@ -1,0 +1,23 @@
+{
+  "parent": "chalk:item/item",
+  "textures": {
+    "layer0": "chalk:items/chalk"
+  },
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [9, 272, 0],
+      "translation": [0.63, 2.20, 1.13],
+      "scale": [0.50, 0.50, 0.50]
+    },
+    "ground": {
+      "rotation": [0, 0, 48],
+      "translation": [0.00, -0.25, 0.00],
+      "scale": [0.40, 0.40, 1.40]
+    },
+    "thirdperson_righthand": {
+      "rotation": [308, 244, 344],
+      "translation": [-1.00, -0.25, 1.00],
+      "scale": [0.33, 0.33, 1.00]
+    }
+  }
+}

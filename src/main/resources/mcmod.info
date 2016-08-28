@@ -1,0 +1,16 @@
+[
+{
+  "modid": "chalk",
+  "name": "Chalk by monnef",
+  "description": "TODO",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["monnef"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
