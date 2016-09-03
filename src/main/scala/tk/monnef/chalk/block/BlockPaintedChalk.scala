@@ -20,6 +20,8 @@ import tk.monnef.chalk.ChalkMod
 import tk.monnef.chalk.core.common._
 import tk.monnef.chalk.core.{MonnefBlock, MonnefTileEntity}
 
+import scala.util.Random
+
 object BlockPaintedChalk {
   private var disableCollisionBoundingBox = false
 
@@ -48,6 +50,8 @@ class BlockPaintedChalk extends Block(Material.SAND) with MonnefBlock with ITile
 
 object TilePaintedChalk {
   private final val TagSide = "chalkSide"
+  private final val TagCanvas = "chalkCanvas"
+  final val CanvasSize = 8
 }
 
 class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
@@ -56,6 +60,38 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
 
   var side = EnumFacing.SOUTH
   private var forceUpdate = false
+  var canvas: Array[Array[Boolean]] = Array.fill(CanvasSize, CanvasSize)(false)
+
+  //  canvas = Array.tabulate(CanvasSize, CanvasSize)((_, _) => Random.nextBoolean())
+
+  canvas(0)(0) = true
+  canvas(1)(0) = true
+  canvas(2)(0) = false
+  canvas(0)(1) = true
+  canvas(1)(1) = false
+  canvas(2)(1) = false
+  canvas(0)(2) = true
+  canvas(1)(2) = false
+  canvas(2)(2) = false
+  canvas(0)(3) = false
+  canvas(1)(3) = false
+  canvas(2)(3) = false
+
+  private def worldPosToIdx(p: Double): Int = {
+    val mod = p % 1f
+    val fixed = if (mod < 0) mod + 1 else mod
+    (fixed * CanvasSize).floor.toInt
+  }
+
+  def paintDot(x: Double, y: Double) {
+    paintDot(worldPosToIdx(x), worldPosToIdx(y))
+  }
+
+  def paintDot(x: Int, y: Int) {
+    println(s"coloring $x $y")
+    canvas(x)(y) = true
+    forceResynchronization()
+  }
 
   override def update(): Unit = {
     if (worldObj.isLogicalClient) {
@@ -95,11 +131,17 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
       side = EnumFacing.values()(sideIndex)
       println(s"deserialized side $side ($sideIndex) for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}")
     }
+    if (compound.hasKey(TagCanvas)) {
+      canvas = compound.getByteArray(TagCanvas).map { case 0 => false case 1 => true }.grouped(CanvasSize).toArray
+      println(s"deserialized canvas for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}: ${canvas.map(_.map { case true => 1 case false => 0 }.mkString("")).mkString(" ")}.")
+    }
   }
 
   def writeCustomDataToNBT(tag: NBTTagCompound): NBTTagCompound = {
     val byteIdx = side.getIndex.toByte
     tag.setByte(TagSide, byteIdx)
+    //noinspection MapFlatten
+    tag.setByteArray(TagCanvas, canvas.map(_.map(x => if (x) 1.toByte else 0.toByte)).flatten)
     tag
   }
 
@@ -111,27 +153,27 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
 }
 
 object TilePaintedChalkRenderer {
+
+  import TilePaintedChalk._
+
   private final val Texture = new ResourceLocation(ChalkMod.ModId, "textures/tiles/chalk.png")
+  final val DotSizeInPix = 16 / CanvasSize
+  final val DotSize = DotSizeInPix * 1f / 16
 }
 
 class TilePaintedChalkRenderer extends TileEntitySpecialRenderer[TilePaintedChalk] {
 
   import TilePaintedChalkRenderer._
+  import TilePaintedChalk._
 
   override def renderTileEntityAt(te: TilePaintedChalk, x: Double, y: Double, z: Double, partialTicks: Float, destroyStage: Int): Unit = {
     Minecraft.getMinecraft.getTextureManager.bindTexture(Texture)
     GlStateManager.pushMatrix()
     import EnumFacing._
     val (rotX: Float, rotY: Float, rotZ: Float) = te.side match {
-      case DOWN =>
-        GlStateManager.color(1, 0, 0, 1)
-        (0f, 0f, 0f) // already done
-      case UP =>
-        GlStateManager.color(0, 1, 0, 1)
-        (180f, 0f, 0f)
-      case _ =>
-        GlStateManager.color(0, 0, 1, 1)
-        (90f, 0f, te.side.getHorizontalAngle + 180f)
+      case DOWN => (0f, 0f, 0f) // already done
+      case UP => (180f, 0f, 0f)
+      case _ => (90f, 0f, te.side.getHorizontalAngle + 180f)
     }
     GlStateManager.translate(x, y, z)
     GlStateManager.translate(.5f, .5f, .5f)
@@ -142,13 +184,22 @@ class TilePaintedChalkRenderer extends TileEntitySpecialRenderer[TilePaintedChal
     GlStateManager.translate(0, 0.001f, 0)
     val tessellator = Tessellator.getInstance
     val buff = tessellator.getBuffer
-    //    val U = 1
-    val U = 1f / (16 / 2)
     buff.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)
-    buff.pos(0, 0, U).tex(0, 1).endVertex()
-    buff.pos(U, 0, U).tex(1, 1).endVertex()
-    buff.pos(U, 0, 0).tex(1, 0).endVertex()
-    buff.pos(0, 0, 0).tex(0, 0).endVertex()
+    val U = DotSize
+
+    val canvas = te.canvas
+    for {
+      x <- canvas.indices
+      y <- canvas.head.indices
+      if canvas(x)(y)
+    } {
+      val sx = x * U
+      val sy = y * U
+      buff.pos(0 + sx, 0, U + sy).tex(0, 1).endVertex()
+      buff.pos(U + sx, 0, U + sy).tex(1, 1).endVertex()
+      buff.pos(U + sx, 0, 0 + sy).tex(1, 0).endVertex()
+      buff.pos(0 + sx, 0, 0 + sy).tex(0, 0).endVertex()
+    }
     tessellator.draw()
     GlStateManager.popMatrix()
   }

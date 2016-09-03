@@ -35,7 +35,14 @@ class ItemChalk extends Item with MonnefItem {
       tile.side = sideHit.getOpposite
       world.notifyBlockUpdate(chalkBlockPos, state, state, 3)
     }
-    world.setBlockState(pos, Seq(Blocks.BEDROCK, Blocks.BOOKSHELF, Blocks.REDSTONE_BLOCK, Blocks.END_STONE).random.getDefaultState)
+    val te = world.getTileEntity(chalkBlockPos)
+
+    // TODO: mapping by side
+    val canvasX = hitVec.xCoord
+    val canvasY = hitVec.zCoord
+    te.asInstanceOf[TilePaintedChalk].paintDot(canvasX, canvasY)
+
+    //    world.setBlockState(pos, Seq(Blocks.BEDROCK, Blocks.BOOKSHELF, Blocks.REDSTONE_BLOCK, Blocks.END_STONE).random.getDefaultState)
   }
 
   override def onItemUse(stack: ItemStack, playerIn: EntityPlayer, worldIn: World, pos: BlockPos, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult = {
