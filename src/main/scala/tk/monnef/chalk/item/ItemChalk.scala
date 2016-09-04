@@ -15,11 +15,13 @@ import tk.monnef.chalk.core.common._
 
 import scala.util.Random
 
+trait ItemBaseChalk
+
 object ItemChalk {
   final val RayTracingRange = 5
 }
 
-class ItemChalk extends Item with MonnefItem {
+class ItemChalk extends Item with MonnefItem with ItemBaseChalk {
 
   import ItemChalk._
 
@@ -28,21 +30,29 @@ class ItemChalk extends Item with MonnefItem {
 
   def processPlayerDraw(stack: ItemStack, player: EntityPlayer, world: World, pos: BlockPos, hitVec: Vec3d, sideHit: EnumFacing) {
     val chalkBlockPos = pos.offset(sideHit)
-    if (world.isAirBlock(chalkBlockPos)) {
+    val isReplaceable = world.getBlockState(chalkBlockPos).getBlock.isReplaceable(world, chalkBlockPos)
+    if (world.isAirBlock(chalkBlockPos) || isReplaceable) {
       val state = ChalkBlocks.paintedChalk.getDefaultState
       world.setBlockState(chalkBlockPos, state)
       val tile = world.getTileEntity(chalkBlockPos).asInstanceOf[TilePaintedChalk]
       tile.side = sideHit.getOpposite
       world.notifyBlockUpdate(chalkBlockPos, state, state, 3)
     }
-    val te = world.getTileEntity(chalkBlockPos)
-
-    // TODO: mapping by side
-    val canvasX = hitVec.xCoord
-    val canvasY = hitVec.zCoord
-    te.asInstanceOf[TilePaintedChalk].paintDot(canvasX, canvasY)
-
-    //    world.setBlockState(pos, Seq(Blocks.BEDROCK, Blocks.BOOKSHELF, Blocks.REDSTONE_BLOCK, Blocks.END_STONE).random.getDefaultState)
+    world.getTileEntity(chalkBlockPos).asInstanceOf[TilePaintedChalk] match {
+      case null =>
+      case te =>
+        import EnumFacing._
+        val (canvasX: Double, canvasY: Double) = te.side match {
+          case DOWN => (hitVec.xCoord, hitVec.zCoord)
+          case UP => (-hitVec.xCoord, hitVec.zCoord)
+          case NORTH => (hitVec.xCoord, -hitVec.yCoord)
+          case SOUTH => (-hitVec.xCoord, -hitVec.yCoord)
+          case EAST => (hitVec.zCoord, -hitVec.yCoord)
+          case WEST => (-hitVec.zCoord, -hitVec.yCoord)
+        }
+        te.asInstanceOf[TilePaintedChalk].drawDot(canvasX, canvasY, !player.isSneaking)
+      //    world.setBlockState(pos, Seq(Blocks.BEDROCK, Blocks.BOOKSHELF, Blocks.REDSTONE_BLOCK, Blocks.END_STONE).random.getDefaultState)
+    }
   }
 
   override def onItemUse(stack: ItemStack, playerIn: EntityPlayer, worldIn: World, pos: BlockPos, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult = {
