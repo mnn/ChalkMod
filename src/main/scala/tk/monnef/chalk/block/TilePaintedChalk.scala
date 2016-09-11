@@ -12,6 +12,8 @@ import tk.monnef.chalk.ChalkMod
 import tk.monnef.chalk.core.MonnefTileEntity
 import tk.monnef.chalk.core.common._
 import tk.monnef.chalk.item.ItemBaseChalk
+import tk.monnef.chalk.sigil.Sigils.SigilType.{Blank, WhiteChalk}
+import tk.monnef.chalk.sigil.Sigils._
 
 object TilePaintedChalk {
   private final val TagSide = "chalkSide"
@@ -30,7 +32,7 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
       } {
       }
 
-      canvas.transpose.foreach { row => println(row.map {if (_) "1" else "0"}.mkString("")) }
+      canvas.transpose.foreach { row => println(row.mkString("")) }
 
       //if (Option(heldItem).flatMap(x => Option(x.getItem)).exists(_.isInstanceOf[ItemBaseChalk])) {    }
       if (heldItem == null) {
@@ -45,22 +47,22 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
 
   var side = EnumFacing.SOUTH
   private var forceUpdate = false
-  var canvas: Array[Array[Boolean]] = Array.fill(CanvasSize, CanvasSize)(false)
+  var canvas: Canvas = Array.fill(CanvasSize, CanvasSize)(0)
 
   //  canvas = Array.tabulate(CanvasSize, CanvasSize)((_, _) => Random.nextBoolean())
 
-  canvas(0)(0) = true
-  canvas(1)(0) = true
-  canvas(2)(0) = false
-  canvas(0)(1) = true
-  canvas(1)(1) = false
-  canvas(2)(1) = false
-  canvas(0)(2) = true
-  canvas(1)(2) = false
-  canvas(2)(2) = false
-  canvas(0)(3) = false
-  canvas(1)(3) = false
-  canvas(2)(3) = false
+  canvas(0)(0) = WhiteChalk
+  canvas(1)(0) = WhiteChalk
+  canvas(2)(0) = Blank
+  canvas(0)(1) = WhiteChalk
+  canvas(1)(1) = Blank
+  canvas(2)(1) = Blank
+  canvas(0)(2) = WhiteChalk
+  canvas(1)(2) = Blank
+  canvas(2)(2) = Blank
+  canvas(0)(3) = Blank
+  canvas(1)(3) = Blank
+  canvas(2)(3) = Blank
 
   private def worldPosToIdx(p: Double): Int = {
     val mod = p % 1f
@@ -68,13 +70,13 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
     (fixed * CanvasSize).floor.toInt
   }
 
-  def drawDot(x: Double, y: Double, drawing: Boolean) {
-    drawDot(worldPosToIdx(x), worldPosToIdx(y), drawing)
+  def drawDot(x: Double, y: Double, sigil: Sigil) {
+    drawDot(worldPosToIdx(x), worldPosToIdx(y), sigil)
   }
 
-  def drawDot(x: Int, y: Int, drawing: Boolean) {
-    println(s"coloring $x $y")
-    canvas(x)(y) = drawing
+  def drawDot(x: Int, y: Int, sigil: Sigil) {
+    println(s"coloring $x $y with $sigil")
+    canvas(x)(y) = sigil
     forceResynchronization()
   }
 
@@ -117,8 +119,8 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
       println(s"deserialized side $side ($sideIndex) for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}")
     }
     if (compound.hasKey(TagCanvas)) {
-      canvas = compound.getByteArray(TagCanvas).map { case 0 => false case 1 => true }.grouped(CanvasSize).toArray
-      println(s"deserialized canvas for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}: ${canvas.map(_.map { case true => 1 case false => 0 }.mkString("")).mkString(" ")}.")
+      canvas = compound.getByteArray(TagCanvas).grouped(CanvasSize).toArray
+      println(s"deserialized canvas for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}: ${canvas.map(_.mkString("")).mkString(" ")}.")
     }
   }
 
@@ -126,7 +128,7 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
     val byteIdx = side.getIndex.toByte
     tag.setByte(TagSide, byteIdx)
     //noinspection MapFlatten
-    tag.setByteArray(TagCanvas, canvas.map(_.map(x => if (x) 1.toByte else 0.toByte)).flatten)
+    tag.setByteArray(TagCanvas, canvas.flatten)
     tag
   }
 

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.{GlStateManager, OpenGlHelper, Tessellator}
 import net.minecraft.util.{EnumFacing, ResourceLocation}
 import org.lwjgl.opengl.GL11
 import tk.monnef.chalk.ChalkMod
+import tk.monnef.chalk.sigil.Sigils.SigilType
 
 object TilePaintedChalkRenderer {
 
@@ -68,7 +69,7 @@ class TilePaintedChalkRenderer extends TileEntitySpecialRenderer[TilePaintedChal
       y <- canvas.head.indices
     } {
       texMappingRandom += 181 * x + y * -331 + 53
-      if (canvas(x)(y)) {
+      if (canvas(x)(y) != SigilType.Blank) {
         val sx = x * U
         val sy = y * U
         val texMapping = TexMapping(texMappingRandom.abs % TexMapping.size)

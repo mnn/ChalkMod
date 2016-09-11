@@ -12,7 +12,10 @@ import tk.monnef.chalk.ChalkMod.logger
 import tk.monnef.chalk.block.{BlockPaintedChalk, ChalkBlocks, TilePaintedChalk}
 import tk.monnef.chalk.core.MonnefItem
 import tk.monnef.chalk.core.common._
+import tk.monnef.chalk.sigil.Sigils.SigilType
 
+import scalaz._
+import Scalaz._
 import scala.util.Random
 
 trait ItemBaseChalk
@@ -50,7 +53,8 @@ class ItemChalk extends Item with MonnefItem with ItemBaseChalk {
           case EAST => (hitVec.zCoord, -hitVec.yCoord)
           case WEST => (-hitVec.zCoord, -hitVec.yCoord)
         }
-        te.asInstanceOf[TilePaintedChalk].drawDot(canvasX, canvasY, !player.isSneaking)
+        val toDraw = player.isSneaking ? SigilType.Blank | SigilType.WhiteChalk
+        te.asInstanceOf[TilePaintedChalk].drawDot(canvasX, canvasY, toDraw)
       //    world.setBlockState(pos, Seq(Blocks.BEDROCK, Blocks.BOOKSHELF, Blocks.REDSTONE_BLOCK, Blocks.END_STONE).random.getDefaultState)
     }
   }

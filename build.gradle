@@ -12,6 +12,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.github.maiflai.scalatest" version "0.14"
+}
+
 apply plugin: 'scala'
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -22,6 +26,7 @@ plugins {
     id "net.minecraftforge.gradle.forge" version "2.0.2"
 }
 */
+
 version = "1.0"
 group = "tk.monnef.chalk" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "chalk"
@@ -66,6 +71,9 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     deobfCompile "MCMultiPart:MCMultiPart:1.2.1:universal"
+    testCompile 'org.scalatest:scalatest_2.11:3.0.0'
+    compile group: 'org.scalaz', name: 'scalaz-core_2.11', version: '7.2.6'
+    testRuntime 'org.pegdown:pegdown:1.6.0'
 }
 
 processResources
