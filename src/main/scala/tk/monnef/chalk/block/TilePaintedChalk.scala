@@ -11,14 +11,12 @@ import net.minecraftforge.fml.common.FMLCommonHandler
 import tk.monnef.chalk.ChalkMod
 import tk.monnef.chalk.core.MonnefTileEntity
 import tk.monnef.chalk.core.common._
-import tk.monnef.chalk.item.ItemBaseChalk
 import tk.monnef.chalk.sigil.Sigils.SigilType.{Blank, WhiteChalk}
 import tk.monnef.chalk.sigil.Sigils._
 
 object TilePaintedChalk {
   private final val TagSide = "chalkSide"
   private final val TagCanvas = "chalkCanvas"
-  final val CanvasSize = 8
 }
 
 class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
