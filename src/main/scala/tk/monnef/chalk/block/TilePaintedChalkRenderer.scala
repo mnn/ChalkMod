@@ -8,6 +8,7 @@ import net.minecraft.util.{EnumFacing, ResourceLocation}
 import org.lwjgl.opengl.GL11
 import tk.monnef.chalk.ChalkMod
 import tk.monnef.chalk.sigil.Sigils.SigilType
+import tk.monnef.chalk.sigil.Sigils._
 
 object TilePaintedChalkRenderer {
 
