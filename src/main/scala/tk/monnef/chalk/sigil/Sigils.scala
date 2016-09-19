@@ -6,6 +6,7 @@ import scalaz._
 import Scalaz._
 import scala.reflect.ClassTag
 import Sigils._
+import net.minecraft.util.EnumFacing
 import tk.monnef.chalk.sigil.ComparisonImprovement.ComparisonImprovement
 
 import scala.annotation.tailrec
@@ -29,7 +30,24 @@ object Sigils {
 
   def formatCanvas(canvas: Canvas): String = canvas.transpose.map(_.mkString(" ")).mkString("\n")
 
-  def parseCanvas(input: String): Canvas = input.split("\n").map(_.split(" ").map(_.toByte)).transpose
+  private[this] def parseByte(input: String): Byte = {
+    try {input.toByte}
+    catch {
+      case e: Throwable =>
+        println("[[[\n" + input.toCharArray.toList.map(_.asInstanceOf[Int]) + "\n]]]")
+        throw new RuntimeException(s"Cannot parse '$input' as byte.", e)
+    }
+  }
+
+  def parseCanvas(input: String): Canvas = {
+    try {
+      input.split("\n").filter(_.trim != "").map(_.split(" +").map(_.trim).map(parseByte)).transpose
+    } catch {
+      case e: Throwable =>
+        println(s"Input: [[$input]]")
+        throw new RuntimeException(s"Cannot parse canvas.", e)
+    }
+  }
 
   def canvasFromIntArray(intArray: Array[Array[Int]]): Canvas = intArray.map(_.map(_.toByte))
 
@@ -57,6 +75,15 @@ object Sigils {
     }
     loop(canvas, 3, List(canvas))
   }
+
+  def computeAllPossibleShifts(canvas: Canvas, maxSize: Int = 1): List[Canvas] =
+    List(canvas) ++
+      (for {
+        size <- 1 to maxSize
+        dir <- EnumFacing.HORIZONTALS
+      } yield {
+        shiftCanvas(canvas, (dir.getFrontOffsetX, dir.getFrontOffsetZ))
+      })
 }
 
 object ComparisonImprovement extends Enumeration {

@@ -23,7 +23,14 @@ class SigilsTest extends FlatSpec with Matchers {
 
   it should "parse canvas" in {
     parseCanvas("0") shouldBe Array(Array(0))
+    parseCanvas("\n0") shouldBe Array(Array(0))
+    parseCanvas("\n0\n  ") shouldBe Array(Array(0))
     parseCanvas("0 1 2\n3 4 5") shouldBe arr3x2
+    parseCanvas(
+      """1 0 0
+        |1 0 0
+        |1 1 0
+      """.stripMargin) shouldBe canvasFromIntArray(Array(Array(1, 1, 1), Array(0, 0, 1), Array(0, 0, 0)))
   }
 
   it should "compute center" in {
@@ -103,5 +110,40 @@ class SigilsTest extends FlatSpec with Matchers {
     res(1) shouldBe expected(1)
     res(2) shouldBe expected(2)
     res(3) shouldBe expected(3)
+  }
+
+  it should "create all possible shifts" in {
+    val arrL = parseCanvas(
+      """1 0 0
+        |1 0 0
+        |1 1 0
+      """.stripMargin)
+
+    computeAllPossibleShifts(arrL, 0) shouldBe List(arrL)
+
+    val one = computeAllPossibleShifts(arrL, 1)
+    //for {(c, i) <- one.zipWithIndex} println(s"$i:\n ${formatCanvas(c)}\n")
+    one.length shouldBe 5
+    one(0) shouldBe arrL
+    one(1) shouldBe parseCanvas(
+      """0 0 0
+        |1 0 0
+        |1 0 0
+      """.stripMargin)
+    one(2) shouldBe parseCanvas(
+      """0 0 0
+        |0 0 0
+        |1 0 0
+      """.stripMargin)
+    one(3) shouldBe parseCanvas(
+      """1 0 0
+        |1 1 0
+        |0 0 0
+      """.stripMargin)
+    one(4) shouldBe parseCanvas(
+      """0 1 0
+        |0 1 0
+        |0 1 1
+      """.stripMargin)
   }
 }
