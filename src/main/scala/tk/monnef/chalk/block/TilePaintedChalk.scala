@@ -14,11 +14,6 @@ import tk.monnef.chalk.core.common._
 import tk.monnef.chalk.sigil.Sigils.SigilType.{Blank, WhiteChalk}
 import tk.monnef.chalk.sigil.Sigils._
 
-object TilePaintedChalk {
-  private final val TagSide = "chalkSide"
-  private final val TagCanvas = "chalkCanvas"
-}
-
 class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
   def blockActivated(player: EntityPlayer, heldItem: ItemStack): Boolean = {
     if (worldObj.isLogicalServer) {
@@ -47,20 +42,20 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
   private var forceUpdate = false
   var canvas: Canvas = Array.fill(CanvasSize, CanvasSize)(0)
 
-  //  canvas = Array.tabulate(CanvasSize, CanvasSize)((_, _) => Random.nextBoolean())
-
-  canvas(0)(0) = WhiteChalk
-  canvas(1)(0) = WhiteChalk
-  canvas(2)(0) = Blank
-  canvas(0)(1) = WhiteChalk
-  canvas(1)(1) = Blank
-  canvas(2)(1) = Blank
-  canvas(0)(2) = WhiteChalk
-  canvas(1)(2) = Blank
-  canvas(2)(2) = Blank
-  canvas(0)(3) = Blank
-  canvas(1)(3) = Blank
-  canvas(2)(3) = Blank
+  if (DebugDefaultSigil) {
+    canvas(0)(0) = WhiteChalk
+    canvas(1)(0) = WhiteChalk
+    canvas(2)(0) = Blank
+    canvas(0)(1) = WhiteChalk
+    canvas(1)(1) = Blank
+    canvas(2)(1) = Blank
+    canvas(0)(2) = WhiteChalk
+    canvas(1)(2) = Blank
+    canvas(2)(2) = Blank
+    canvas(0)(3) = Blank
+    canvas(1)(3) = Blank
+    canvas(2)(3) = Blank
+  }
 
   private def worldPosToIdx(p: Double): Int = {
     val mod = p % 1f
@@ -114,11 +109,11 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
     } else {
       val sideIndex = compound.getByte(TagSide)
       side = EnumFacing.values()(sideIndex)
-      println(s"deserialized side $side ($sideIndex) for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}")
+      //      println(s"deserialized side $side ($sideIndex) for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}")
     }
     if (compound.hasKey(TagCanvas)) {
       canvas = compound.getByteArray(TagCanvas).grouped(CanvasSize).toArray
-      println(s"deserialized canvas for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}: ${canvas.map(_.mkString("")).mkString(" ")}.")
+      //      println(s"deserialized canvas for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}: ${canvas.map(_.mkString("")).mkString(" ")}.")
     }
   }
 
@@ -132,7 +127,13 @@ class TilePaintedChalk extends TileEntity with MonnefTileEntity with ITickable {
 
   override def writeToNBT(compound: NBTTagCompound): NBTTagCompound = {
     val nbt = writeCustomDataToNBT(super.writeToNBT(compound))
-    println(s"serialized side $side for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}")
+    //    println(s"serialized side $side for $getPos on ${FMLCommonHandler.instance().getEffectiveSide}")
     nbt
   }
+}
+
+object TilePaintedChalk {
+  private final val TagSide = "chalkSide"
+  private final val TagCanvas = "chalkCanvas"
+  private final val DebugDefaultSigil = false
 }
