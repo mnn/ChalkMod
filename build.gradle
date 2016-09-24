@@ -74,6 +74,7 @@ dependencies {
     testCompile 'org.scalatest:scalatest_2.11:3.0.0'
     compile group: 'org.scalaz', name: 'scalaz-core_2.11', version: '7.2.6'
     testRuntime 'org.pegdown:pegdown:1.6.0'
+    compile group: 'com.chuusai', name:'shapeless_2.11', version: '2.3.2'
 }
 
 processResources
